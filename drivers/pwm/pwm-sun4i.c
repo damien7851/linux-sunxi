@@ -105,7 +105,7 @@ static int sun4i_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
 	unsigned int prescaler = 0;
 	int err;
 
-	clk_rate = clk_get_rate(sun4i_pwm->clk);
+	clk_rate = clk_get_rate(sun4i_pwm->clk); // TODO fonction à modifié
 
 	if (sun4i_pwm->data->has_prescaler_bypass) {
 		/* First, test without any prescaler when available */
@@ -145,9 +145,9 @@ static int sun4i_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
 	do_div(div, period_ns);
 	dty = div;
 
-	err = clk_prepare_enable(sun4i_pwm->clk);
+	err = clk_prepare_enable(sun4i_pwm->clk); //TODO to check
 	if (err) {
-		dev_err(chip->dev, "failed to enable PWM clock\n");
+		dev_err(chip->dev, "failed to enable PWM clock\n"); //remove
 		return err;
 	}
 
@@ -156,7 +156,7 @@ static int sun4i_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
 
 	if (sun4i_pwm->data->has_rdy && (val & PWM_RDY(pwm->hwpwm))) {
 		spin_unlock(&sun4i_pwm->ctrl_lock);
-		clk_disable_unprepare(sun4i_pwm->clk);
+		clk_disable_unprepare(sun4i_pwm->clk); //TODO
 		return -EBUSY;
 	}
 
@@ -181,7 +181,7 @@ static int sun4i_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
 	}
 
 	spin_unlock(&sun4i_pwm->ctrl_lock);
-	clk_disable_unprepare(sun4i_pwm->clk);
+	clk_disable_unprepare(sun4i_pwm->clk); //TODO to check
 
 	return 0;
 }
@@ -311,18 +311,18 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
 	int i, ret;
 	const struct of_device_id *match;
 
-	match = of_match_device(sun4i_pwm_dt_ids, &pdev->dev);
+	match = of_match_device(sun4i_pwm_dt_ids, &pdev->dev); //pas sur que cela soit utile ou implémenter
 
 	pwm = devm_kzalloc(&pdev->dev, sizeof(*pwm), GFP_KERNEL);
 	if (!pwm)
 		return -ENOMEM;
 
-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);// todo remplacer par la fonction sunxi car celle-ci utlise le dtb
 	pwm->base = devm_ioremap_resource(&pdev->dev, res);
 	if (IS_ERR(pwm->base))
 		return PTR_ERR(pwm->base);
 
-	pwm->clk = devm_clk_get(&pdev->dev, NULL);
+	pwm->clk = devm_clk_get(&pdev->dev, NULL); // todo remplacer par la fonction sunxi car celle-ci utlise le dtb
 	if (IS_ERR(pwm->clk))
 		return PTR_ERR(pwm->clk);
 
@@ -339,15 +339,15 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
 
 	ret = pwmchip_add(&pwm->chip);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "failed to add PWM chip: %d\n", ret);
+		dev_err(&pdev->dev, "failed to add PWM chip: %d\n", ret);  // apriori non implémenté à suprimé
 		return ret;
 	}
 
 	platform_set_drvdata(pdev, pwm);
 
-	ret = clk_prepare_enable(pwm->clk);
+	ret = clk_prepare_enable(pwm->clk); // todo remplacer par la fonction sunxi car celle-ci utlise le dtb cf ir example
 	if (ret) {
-		dev_err(&pdev->dev, "failed to enable PWM clock\n");
+		dev_err(&pdev->dev, "failed to enable PWM clock\n");// apriori non implémenté à suprimé
 		goto clk_error;
 	}
 
@@ -355,7 +355,7 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
 	for (i = 0; i < pwm->chip.npwm; i++)
 		if (!(val & BIT_CH(PWM_ACT_STATE, i)))
 			pwm->chip.pwms[i].polarity = PWM_POLARITY_INVERSED;
-	clk_disable_unprepare(pwm->clk);
+	clk_disable_unprepare(pwm->clk);// todo remplacer par la fonction sunxi car celle-ci utlise le dtb cf ir example
 
 	return 0;
 
