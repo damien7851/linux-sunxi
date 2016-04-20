@@ -30,7 +30,6 @@
 #include <linux/debugfs.h>
 #include <linux/seq_file.h>
 
-#include <dt-bindings/pwm/pwm.h>
 
 #define MAX_PWMS 1024
 

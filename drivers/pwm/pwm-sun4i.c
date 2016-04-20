@@ -18,7 +18,7 @@
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/time.h>
-
+#define PWM_CTRL_REG_BASE   0x01c20e00 //added
 #define PWM_CTRL_REG		0x0
 
 #define PWM_CH_PRD_BASE		0x4
@@ -105,7 +105,7 @@ static int sun4i_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
 	unsigned int prescaler = 0;
 	int err;
 
-	clk_rate = clk_get_rate(sun4i_pwm->clk); // TODO fonction à modifié
+	clk_rate = clk_get_rate(sun4i_pwm->clk); // TODO fonction déclare mais est t'elle implémenter...
 
 	if (sun4i_pwm->data->has_prescaler_bypass) {
 		/* First, test without any prescaler when available */
@@ -301,28 +301,29 @@ static const struct of_device_id sun4i_pwm_dt_ids[] = {
 		/* sentinel */
 	},
 };
-MODULE_DEVICE_TABLE(of, sun4i_pwm_dt_ids);
+//MODULE_DEVICE_TABLE(of, sun4i_pwm_dt_ids);//TODO la struture est utile mais pas ca déclaration dans le kernel
 
 static int sun4i_pwm_probe(struct platform_device *pdev)
 {
 	struct sun4i_pwm_chip *pwm;
-	struct resource *res;
+	//struct resource *res; //pas de resources car pas de dtbs
 	u32 val;
 	int i, ret;
 	const struct of_device_id *match;
+    #ifdef ARCH_SUN7I
+	match = sun4i_pwm_dt_ids[3];
+	#endif
+	//TODO add define for other arch
 
-	match = of_match_device(sun4i_pwm_dt_ids, &pdev->dev); //pas sur que cela soit utile ou implémenter
-
-	pwm = devm_kzalloc(&pdev->dev, sizeof(*pwm), GFP_KERNEL);
+	pwm = devm_kzalloc(&pdev->dev, sizeof(*pwm), GFP_KERNEL);// si ca marche tant mieux car plus d'automatisme qu' simple kzalloc
 	if (!pwm)
 		return -ENOMEM;
 
-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);// todo remplacer par la fonction sunxi car celle-ci utlise le dtb
-	pwm->base = devm_ioremap_resource(&pdev->dev, res);
-	if (IS_ERR(pwm->base))
-		return PTR_ERR(pwm->base);
 
-	pwm->clk = devm_clk_get(&pdev->dev, NULL); // todo remplacer par la fonction sunxi car celle-ci utlise le dtb
+	pwm->base = PWM_CTRL_REG_BASE;//static def because no dtb
+
+
+	pwm->clk = devm_clk_get(&pdev->dev, NULL); // TODO à tester
 	if (IS_ERR(pwm->clk))
 		return PTR_ERR(pwm->clk);
 
@@ -374,14 +375,17 @@ static int sun4i_pwm_remove(struct platform_device *pdev)
 static struct platform_driver sun4i_pwm_driver = {
 	.driver = {
 		.name = "sun4i-pwm",
-		.of_match_table = sun4i_pwm_dt_ids,
+		.of_match_table = sun4i_pwm_dt_ids, //TODO utile? si pas nuisible on laisse
 	},
 	.probe = sun4i_pwm_probe,
 	.remove = sun4i_pwm_remove,
 };
-module_platform_driver(sun4i_pwm_driver);
-
+//TODO code init si echec module platform driver
+//module_init();
+//TODO code exit
+//module_exit();
+module_platform_driver(sun4i_pwm_driver);//TODO à tester
 MODULE_ALIAS("platform:sun4i-pwm");
-MODULE_AUTHOR("Alexandre Belloni <alexandre.belloni@free-electrons.com>");
-MODULE_DESCRIPTION("Allwinner sun4i PWM driver");
+MODULE_AUTHOR("Damien Pageot <damien....@gmail.com>");
+MODULE_DESCRIPTION("Allwinner sun4i PWM driver legacy kernel ");
 MODULE_LICENSE("GPL v2");

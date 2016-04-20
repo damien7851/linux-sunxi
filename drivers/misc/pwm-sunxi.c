@@ -939,7 +939,7 @@ void pwm_polarity(struct pwm_device *pwm,int act_state)
 	return;
 
 }
-EXPORT_SYMBOL(pwm_polarity);
+EXPORT_SYMBOL(pwm_polarity); //not in pwm.h --> not usable!
 void pwm_free(struct pwm_device *pwm)
 {
 	if (pwm->chan->use_count) {
