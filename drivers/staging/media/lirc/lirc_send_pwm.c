@@ -135,7 +135,11 @@ static int init_timing_params(int new_duty_cycle,
 {
     int ret;
     period = 1000000000L / freq;
+<<<<<<< HEAD
     pulse_width = period / 100 * new_duty_cycle ;
+=======
+    pulse_width = period / 100 * duty_cycle ;
+>>>>>>> 11958a1... 	modifié:         drivers/misc/pwm-sunxi.c
     dprintk("pwm pointeur address %p",&pwm_out);
     dprintk("pwm address %p",pwm_out);
     ret = pwm_config(pwm_out,pulse_width,period);
