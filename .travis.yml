@@ -2,6 +2,9 @@
 
 language: c
 
+git:
+  depth: 1
+  
 notifications:
   - email: true
 
@@ -30,7 +33,9 @@ script:
   - export ARCH=arm
   - export CROSS_COMPILE=arm-linux-gnueabihf-
   #- echo "CONFIG_MODULES=y" >> arch/arm/configs/multi_v7_defconfig
-  #- echo "CONFIG_MODULE_UNLOAD=y" >> arch/arm/configs/multi_v7_defconfig
+  #add my modules
+  - echo "CONFIG_LIRC_SEND_PWM=m" >> arch/arm/configs/sun7i_defconfig
+  - echo "CONFIG_SUNXI_PWM=m" >> arch/arm/configs/sun7i_defconfig
   - make sun7i_defconfig
   - make -j`getconf _NPROCESSORS_ONLN` uImage modules
 # - make -j`getconf _NPROCESSORS_ONLN` M=$MYHOME modules
