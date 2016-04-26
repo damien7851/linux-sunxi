@@ -877,7 +877,7 @@ static int devm_pwm_match(struct device *dev, void *res, void *data)
  */
 void devm_pwm_put(struct device *dev, struct pwm_device *pwm)
 {
-	printk(KERN_ERROR "function not implemented");
+	printk(KERN_ERR "function not implemented");
 }
 EXPORT_SYMBOL_GPL(devm_pwm_put);
 
