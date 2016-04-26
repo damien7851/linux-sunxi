@@ -568,61 +568,62 @@ static struct pwm_chip *of_node_to_pwmchip(struct device_node *np)
  */
 struct pwm_device *of_pwm_get(struct device_node *np, const char *con_id)
 {
-	struct pwm_device *pwm = NULL;
-	struct of_phandle_args args;
-	struct pwm_chip *pc;
-	int index = 0;
-	int err;
-
-	if (con_id) {
-		index = of_property_match_string(np, "pwm-names", con_id);
-		if (index < 0)
-			return ERR_PTR(index);
-	}
-
-	err = of_parse_phandle_with_args(np, "pwms", "#pwm-cells", index,
-					 &args);
-	if (err) {
-		pr_debug("%s(): can't parse \"pwms\" property\n", __func__);
-		return ERR_PTR(err);
-	}
-
-	pc = of_node_to_pwmchip(args.np);
-	if (IS_ERR(pc)) {
-		pr_debug("%s(): PWM chip not found\n", __func__);
-		pwm = ERR_CAST(pc);
-		goto put;
-	}
-
-	if (args.args_count != pc->of_pwm_n_cells) {
-		pr_debug("%s: wrong #pwm-cells for %s\n", np->full_name,
-			 args.np->full_name);
-		pwm = ERR_PTR(-EINVAL);
-		goto put;
-	}
-
-	pwm = pc->of_xlate(pc, &args);
-	if (IS_ERR(pwm))
-		goto put;
-
-	/*
-	 * If a consumer name was not given, try to look it up from the
-	 * "pwm-names" property if it exists. Otherwise use the name of
-	 * the user device node.
-	 */
-	if (!con_id) {
-		err = of_property_read_string_index(np, "pwm-names", index,
-						    &con_id);
-		if (err < 0)
-			con_id = np->name;
-	}
-
-	pwm->label = con_id;
-
-put:
-	of_node_put(args.np);
-
-	return pwm;
+    return ERR_PTR(-ENOSYS);
+//	struct pwm_device *pwm = NULL;
+//	struct of_phandle_args args;
+//	struct pwm_chip *pc;
+//	int index = 0;
+//	int err;
+//
+//	if (con_id) {
+//		index = of_property_match_string(np, "pwm-names", con_id);  //TODO workaround
+//		if (index < 0)
+//			return ERR_PTR(index);
+//	}
+//
+//	err = of_parse_phandle_with_args(np, "pwms", "#pwm-cells", index,//TODO workaround
+//					 &args);
+//	if (err) {
+//		pr_debug("%s(): can't parse \"pwms\" property\n", __func__);
+//		return ERR_PTR(err);
+//	}
+//
+//	pc = of_node_to_pwmchip(args.np);
+//	if (IS_ERR(pc)) {
+//		pr_debug("%s(): PWM chip not found\n", __func__);
+//		pwm = ERR_CAST(pc);
+//		goto put;
+//	}
+//
+//	if (args.args_count != pc->of_pwm_n_cells) {
+//		pr_debug("%s: wrong #pwm-cells for %s\n", np->full_name,
+//			 args.np->full_name);
+//		pwm = ERR_PTR(-EINVAL);
+//		goto put;
+//	}
+//
+//	pwm = pc->of_xlate(pc, &args);
+//	if (IS_ERR(pwm))
+//		goto put;
+//
+//	/*
+//	 * If a consumer name was not given, try to look it up from the
+//	 * "pwm-names" property if it exists. Otherwise use the name of
+//	 * the user device node.
+//	 */
+//	if (!con_id) {
+//		err = of_property_read_string_index(np, "pwm-names", index,
+//						    &con_id);
+//		if (err < 0)
+//			con_id = np->name;
+//	}
+//
+//	pwm->label = con_id;
+//
+//put:
+//	of_node_put(args.np);
+//
+//	return pwm;
 }
 EXPORT_SYMBOL_GPL(of_pwm_get);
 
@@ -876,7 +877,7 @@ static int devm_pwm_match(struct device *dev, void *res, void *data)
  */
 void devm_pwm_put(struct device *dev, struct pwm_device *pwm)
 {
-	WARN_ON(devres_release(dev, devm_pwm_release, devm_pwm_match, pwm));
+	printk(KERN_ERROR "function not implemented");
 }
 EXPORT_SYMBOL_GPL(devm_pwm_put);
 
