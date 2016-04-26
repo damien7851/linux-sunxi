@@ -30,10 +30,9 @@
 #include <linux/debugfs.h>
 #include <linux/seq_file.h>
 
-#include <dt-bindings/pwm/pwm.h>
 
 #define MAX_PWMS 1024
-
+#define PWM_POLARITY_INVERTED	(1 << 0) // in order to remove dependencie with <dt-bindings/pwm/pwm.h>
 static DEFINE_MUTEX(pwm_lookup_lock);
 static LIST_HEAD(pwm_lookup_list);
 static DEFINE_MUTEX(pwm_lock);
