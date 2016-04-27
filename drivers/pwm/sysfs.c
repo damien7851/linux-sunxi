@@ -22,6 +22,7 @@
 #include <linux/slab.h>
 #include <linux/kdev_t.h>
 #include <linux/pwm.h>
+#include <linux/module.h> // added because THISmodule undefined but it's strange
 //* helper function from mainline kernel in order to no modify linux/sysfs.h */
 #define __ATTR_RW(_name) __ATTR(_name, (S_IWUSR | S_IRUGO),             \
                          _name##_show, _name##_store)
@@ -331,7 +332,7 @@ ATTRIBUTE_GROUPS(pwm_chip);
 static struct class pwm_class = {
 	.name = "pwm",
 	.owner = THIS_MODULE,
-	.dev_groups = pwm_chip_groups,
+//	.dev_groups = pwm_chip_groups, //deleted because not exit in this version of device.h
 };
 
 static int pwmchip_sysfs_match(struct device *parent, const void *data)
