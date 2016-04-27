@@ -327,7 +327,7 @@ static struct attribute *pwm_chip_attrs[] = {
 	&dev_attr_npwm.attr,
 	NULL,
 };
-ATTRIBUTE_GROUPS(pwm_chip);
+//ATTRIBUTE_GROUPS(pwm_chip);
 
 static struct class pwm_class = {
 	.name = "pwm",
@@ -335,7 +335,7 @@ static struct class pwm_class = {
 //	.dev_groups = pwm_chip_groups, //deleted because not exit in this version of device.h
 };
 
-static int pwmchip_sysfs_match(struct device *parent, const void *data)
+static int pwmchip_sysfs_match(struct device *parent, void *data)
 {
 	return dev_get_drvdata(parent) == data;
 }

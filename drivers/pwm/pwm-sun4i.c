@@ -18,7 +18,7 @@
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/time.h>
-#define PWM_CTRL_REG_BASE   0x01c20e00 //added
+#define PWM_CTRL_REG_BASE   (0x01c20e00) //added
 #define PWM_CTRL_REG		0x0
 
 #define PWM_CH_PRD_BASE		0x4
@@ -310,7 +310,7 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
 	u32 val;
 	int i, ret;
 	const struct of_device_id *match;
-    #ifdef ARCH_SUN7I
+    #ifdef CONFIG_ARCH_SUN7I
 	match = sun4i_pwm_dt_ids[3];
 	#endif
 	//TODO add define for other arch
