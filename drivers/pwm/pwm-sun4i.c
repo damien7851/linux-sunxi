@@ -320,10 +320,10 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 
-	pwm->base = PWM_CTRL_REG_BASE;//static def because no dtb
+	pwm->base = (__iomem)PWM_CTRL_REG_BASE;//static def because no dtb
 
 
-	pwm->clk = devm_clk_get(&pdev->dev, NULL); // TODO à tester
+	pwm->clk = clk_get(&pdev->dev, NULL); // TODO à tester
 	if (IS_ERR(pwm->clk))
 		return PTR_ERR(pwm->clk);
 
