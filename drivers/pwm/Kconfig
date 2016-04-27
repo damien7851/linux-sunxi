@@ -35,7 +35,6 @@ config PWM_SYSFS
 config PWM_SUN4I
 	tristate "Allwinner PWM support"
 	depends on ARCH_SUN4I || ARCH_SUN5I || ARCH_SUN7I
-	depends on HAS_IOMEM && COMMON_CLK
 	help
 	  Generic PWM framework driver for Allwinner SoCs.
 
