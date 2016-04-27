@@ -311,7 +311,7 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
 	int i, ret;
 	const struct of_device_id *match;
     #ifdef CONFIG_ARCH_SUN7I
-	match = sun4i_pwm_dt_ids[3];
+	match = &sun4i_pwm_dt_ids[3];
 	#endif
 	//TODO add define for other arch
 
