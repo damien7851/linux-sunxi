@@ -7,7 +7,14 @@ git:
   
 notifications:
   - email: true
-
+env:
+  global:
+    # Git and Github credentials for pushing documentation
+    #- GIT_NAME=poppy-bot
+    #- GIT_EMAIL=poppy-bot-ci@inria.fr
+    # GH_TOKEN encrypted below > travis encrypt GH_TOKEN=XXXXXX --add
+    # You have to overwrite your hown token to push the documentation to your repo.
+    #- secure: ""
 before_install:
   # Install the arm32 cross-compiler
   - sudo apt-get update -qq
@@ -43,4 +50,9 @@ script:
 # - make -j`getconf _NPROCESSORS_ONLN` M=$MYHOME modules
 
 
+after_success:
+ - make deb-pkg
+ 
+- git config --global user.name $GIT_NAME
+- git config --global user.email $GIT_EMAIL
 
