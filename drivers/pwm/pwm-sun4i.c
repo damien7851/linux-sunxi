@@ -416,7 +416,7 @@ static int __init sun4i_pwm_init(void)
 	register_fail:
 	return rc;
 }
-module_init(sunxi_pwm_init);
+module_init(sun4i_pwm_init);
 
 static void __exit sun4i_pwm_exit(void)
 {
