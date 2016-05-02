@@ -46,6 +46,7 @@
 
 #define BIT_CH(bit, chan)	((bit) << ((chan) * PWMCH_OFFSET))
 
+static struct platform_device *sun4i_dev;
 static const u32 prescaler_table[] = {
 	120,
 	180,
@@ -380,11 +381,51 @@ static struct platform_driver sun4i_pwm_driver = {
 	.probe = sun4i_pwm_probe,
 	.remove = sun4i_pwm_remove,
 };
-//TODO code init si echec module platform driver
-//module_init();
-//TODO code exit
-//module_exit();
-module_platform_driver(sun4i_pwm_driver);//TODO à tester
+
+static int __init sun4i_pwm_init(void)
+{
+	/* TODO :
+	function platform_device_alloc() and function platform_device_add() should be replac by a static description in file :
+	arm/arch/plat-sunxi/devices.c. in this case the driver will automatically load and more information,
+	for example the base address will be available to the driver. This is more correct than the actual coding.
+	*/
+	int rc = 0;
+
+	rc = platform_driver_register(&sun4i_pwm_driver);
+	if (rc) {
+            printk(KERN_ERR
+                   "sun4i-pwm : sun4i register returned %d\n", rc);
+            goto register_fail;
+    }
+    /* it would be better to complete a device structure which will add resources
+     and call platform_device_register instead of two _device_ function*/
+    sun4i_dev = platform_device_alloc("sun4i-pwm", 0);
+    if (!sun4i_dev) {
+            rc = -ENOMEM;
+            goto exit_driver_unregister;
+    }
+
+	rc = platform_device_add(sun4i_dev);
+	if (rc) {
+    	platform_device_put(sun4i_dev);
+    	goto exit_driver_unregister;
+    }
+	return 0;
+	exit_driver_unregister:
+	platform_driver_unregister(&sun4i_pwm_driver);
+	register_fail:
+	return rc;
+}
+module_init(sunxi_pwm_init);
+
+static void __exit sun4i_pwm_exit(void)
+{
+	platform_device_unregister(sun4i_dev);
+	platform_driver_unregister(&sun4i_pwm_driver);
+}
+module_exit(sun4i_pwm_exit);
+
+
 MODULE_ALIAS("platform:sun4i-pwm");
 MODULE_AUTHOR("Damien Pageot <damien....@gmail.com>");
 MODULE_DESCRIPTION("Allwinner sun4i PWM driver legacy kernel ");
