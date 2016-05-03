@@ -107,7 +107,7 @@ static int sun4i_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
 	int err;
 
 	clk_rate = clk_get_rate(sun4i_pwm->clk); // TODO fonction déclare mais est t'elle implémenter...
-
+    printk(KERN_INFO "pwm-sun4i : master clock is %llu Hz",clk_rate);
 	if (sun4i_pwm->data->has_prescaler_bypass) {
 		/* First, test without any prescaler when available */
 		prescaler = PWM_PRESCAL_MASK;
@@ -146,18 +146,18 @@ static int sun4i_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
 	do_div(div, period_ns);
 	dty = div;
 
-	err = clk_prepare_enable(sun4i_pwm->clk); //TODO to check
+	/*err = clk_prepare_enable(sun4i_pwm->clk); //TODO to check
 	if (err) {
 		dev_err(chip->dev, "failed to enable PWM clock\n"); //remove
 		return err;
-	}
+	}*/ //clock always run
 
 	spin_lock(&sun4i_pwm->ctrl_lock);
 	val = sun4i_pwm_readl(sun4i_pwm, PWM_CTRL_REG);
 
 	if (sun4i_pwm->data->has_rdy && (val & PWM_RDY(pwm->hwpwm))) {
 		spin_unlock(&sun4i_pwm->ctrl_lock);
-		clk_disable_unprepare(sun4i_pwm->clk); //TODO
+//		clk_disable_unprepare(sun4i_pwm->clk); //TODO
 		return -EBUSY;
 	}
 
@@ -182,7 +182,7 @@ static int sun4i_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
 	}
 
 	spin_unlock(&sun4i_pwm->ctrl_lock);
-	clk_disable_unprepare(sun4i_pwm->clk); //TODO to check
+//	clk_disable_unprepare(sun4i_pwm->clk); //TODO to check
 
 	return 0;
 }
@@ -194,11 +194,11 @@ static int sun4i_pwm_set_polarity(struct pwm_chip *chip, struct pwm_device *pwm,
 	u32 val;
 	int ret;
 
-	ret = clk_prepare_enable(sun4i_pwm->clk);
+/*	ret = clk_prepare_enable(sun4i_pwm->clk);
 	if (ret) {
 		dev_err(chip->dev, "failed to enable PWM clock\n");
 		return ret;
-	}
+	}*/
 
 	spin_lock(&sun4i_pwm->ctrl_lock);
 	val = sun4i_pwm_readl(sun4i_pwm, PWM_CTRL_REG);
@@ -211,7 +211,7 @@ static int sun4i_pwm_set_polarity(struct pwm_chip *chip, struct pwm_device *pwm,
 	sun4i_pwm_writel(sun4i_pwm, val, PWM_CTRL_REG);
 
 	spin_unlock(&sun4i_pwm->ctrl_lock);
-	clk_disable_unprepare(sun4i_pwm->clk);
+//	clk_disable_unprepare(sun4i_pwm->clk);
 
 	return 0;
 }
@@ -222,11 +222,11 @@ static int sun4i_pwm_enable(struct pwm_chip *chip, struct pwm_device *pwm)
 	u32 val;
 	int ret;
 
-	ret = clk_prepare_enable(sun4i_pwm->clk);
+/*	ret = clk_prepare_enable(sun4i_pwm->clk);
 	if (ret) {
 		dev_err(chip->dev, "failed to enable PWM clock\n");
 		return ret;
-	}
+	}*/
 
 	spin_lock(&sun4i_pwm->ctrl_lock);
 	val = sun4i_pwm_readl(sun4i_pwm, PWM_CTRL_REG);
@@ -250,7 +250,7 @@ static void sun4i_pwm_disable(struct pwm_chip *chip, struct pwm_device *pwm)
 	sun4i_pwm_writel(sun4i_pwm, val, PWM_CTRL_REG);
 	spin_unlock(&sun4i_pwm->ctrl_lock);
 
-	clk_disable_unprepare(sun4i_pwm->clk);
+//	clk_disable_unprepare(sun4i_pwm->clk);
 }
 
 static const struct pwm_ops sun4i_pwm_ops = {
@@ -324,7 +324,7 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
 	pwm->base = PWM_CTRL_REG_BASE;//static def because no dtb
 
 
-	pwm->clk = clk_get(&pdev->dev, NULL); // TODO à tester
+	pwm->clk = clk_get(NULL, CLK_SYS_HOSC); // only in order to be able get rate this clock always run (master clock)
 	if (IS_ERR(pwm->clk))
 		return PTR_ERR(pwm->clk);
 
@@ -347,17 +347,17 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, pwm);
 
-	ret = clk_prepare_enable(pwm->clk); // todo remplacer par la fonction sunxi car celle-ci utlise le dtb cf ir example
+	/*ret = clk_prepare_enable(pwm->clk); // todo remplacer par la fonction sunxi car celle-ci utlise le dtb cf ir example
 	if (ret) {
 		dev_err(&pdev->dev, "failed to enable PWM clock\n");// apriori non implémenté à suprimé
-		goto clk_error;
-	}
+		goto clk_error; // no prepare clock because she always run
+	}*/
 
 	val = sun4i_pwm_readl(pwm, PWM_CTRL_REG);
 	for (i = 0; i < pwm->chip.npwm; i++)
 		if (!(val & BIT_CH(PWM_ACT_STATE, i)))
 			pwm->chip.pwms[i].polarity = PWM_POLARITY_INVERSED;
-	clk_disable_unprepare(pwm->clk);// todo remplacer par la fonction sunxi car celle-ci utlise le dtb cf ir example
+	//clk_disable_unprepare(pwm->clk);// todo remplacer par la fonction sunxi car celle-ci utlise le dtb cf ir example
 
 	return 0;
 
