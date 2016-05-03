@@ -1,10 +1,9 @@
 # One may have a look at http://docs.travis-ci.com/user/installing-dependencies/
 
 language: c
-
+cache: ccache
 git:
   depth: 1
-
 
 before_install:
   # Install the arm32 cross-compiler
@@ -19,13 +18,14 @@ before_install:
   - sudo apt-get install u-boot-tools lzop
 before_script:
   # Store the home repository
+ 
   - export MYHOME=$PWD
 
 
 script:
 
 
-
+ - export PATH=/usr/lib/ccache:$PATH
 
   # arm32 compilation
   - export ARCH=arm
