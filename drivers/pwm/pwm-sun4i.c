@@ -8,6 +8,7 @@
 
 #include <linux/bitops.h>
 #include <linux/clk.h>
+#include <mach/clock.h>
 #include <linux/err.h>
 #include <linux/io.h>
 #include <linux/module.h>
@@ -104,7 +105,7 @@ static int sun4i_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
 	u32 prd, dty, val, clk_gate;
 	u64 clk_rate, div = 0;
 	unsigned int prescaler = 0;
-	int err;
+//	int err;
 
 	clk_rate = clk_get_rate(sun4i_pwm->clk); // TODO fonction déclare mais est t'elle implémenter...
     printk(KERN_INFO "pwm-sun4i : master clock is %llu Hz",clk_rate);
@@ -192,7 +193,7 @@ static int sun4i_pwm_set_polarity(struct pwm_chip *chip, struct pwm_device *pwm,
 {
 	struct sun4i_pwm_chip *sun4i_pwm = to_sun4i_pwm_chip(chip);
 	u32 val;
-	int ret;
+	//int ret;
 
 /*	ret = clk_prepare_enable(sun4i_pwm->clk);
 	if (ret) {
@@ -220,7 +221,7 @@ static int sun4i_pwm_enable(struct pwm_chip *chip, struct pwm_device *pwm)
 {
 	struct sun4i_pwm_chip *sun4i_pwm = to_sun4i_pwm_chip(chip);
 	u32 val;
-	int ret;
+	//int ret;
 
 /*	ret = clk_prepare_enable(sun4i_pwm->clk);
 	if (ret) {
@@ -285,7 +286,7 @@ static const struct sun4i_pwm_data sun4i_pwm_data_a20 = {
 	.npwm = 2,
 };
 
-static const struct of_device_id sun4i_pwm_dt_ids[] = {
+static struct of_device_id sun4i_pwm_dt_ids[] = { //remove const before struct
 	{
 		.compatible = "allwinner,sun4i-a10-pwm",
 		.data = &sun4i_pwm_data_a10,
@@ -321,7 +322,7 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 
-	pwm->base = PWM_CTRL_REG_BASE;//static def because no dtb
+	pwm->base = (void __iomem*)PWM_CTRL_REG_BASE;//static def because no dtb
 
 
 	pwm->clk = clk_get(NULL, CLK_SYS_HOSC); // only in order to be able get rate this clock always run (master clock)
@@ -361,9 +362,9 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
 
 	return 0;
 
-clk_error:
+/*clk_error:
 	pwmchip_remove(&pwm->chip);
-	return ret;
+	return ret;*/
 }
 
 static int sun4i_pwm_remove(struct platform_device *pdev)

@@ -530,7 +530,7 @@ void pwm_disable(struct pwm_device *pwm)
 }
 EXPORT_SYMBOL_GPL(pwm_disable);
 
-static struct pwm_chip *of_node_to_pwmchip(struct device_node *np)
+/*static struct pwm_chip *of_node_to_pwmchip(struct device_node *np)
 {
 	struct pwm_chip *chip;
 
@@ -545,7 +545,7 @@ static struct pwm_chip *of_node_to_pwmchip(struct device_node *np)
 	mutex_unlock(&pwm_lock);
 
 	return ERR_PTR(-EPROBE_DEFER);
-}
+}*/
 
 /**
  * of_pwm_get() - request a PWM via the PWM framework
@@ -856,7 +856,7 @@ struct pwm_device *devm_of_pwm_get(struct device *dev, struct device_node *np,
 }
 EXPORT_SYMBOL_GPL(devm_of_pwm_get);
 
-static int devm_pwm_match(struct device *dev, void *res, void *data)
+/*static int devm_pwm_match(struct device *dev, void *res, void *data)
 {
 	struct pwm_device **p = res;
 
@@ -864,7 +864,7 @@ static int devm_pwm_match(struct device *dev, void *res, void *data)
 		return 0;
 
 	return *p == data;
-}
+}*/
 
 /**
  * devm_pwm_put() - resource managed pwm_put()
