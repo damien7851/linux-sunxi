@@ -19,7 +19,7 @@
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/time.h>
-#define PWM_CTRL_REG_BASE   (0x01c20e00) //added
+#define PWM_CTRL_REG_BASE   (0xf1c20e00) //added + offset 0xf000000 because remap...
 #define PWM_CTRL_REG		0x0
 
 #define PWM_CH_PRD_BASE		0x4
@@ -322,7 +322,7 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 
-	pwm->base = (void __iomem*)PWM_CTRL_REG_BASE;//static def because no dtb
+	pwm->base = PWM_CTRL_REG_BASE;//static def because no dtb
 
 
 	pwm->clk = clk_get(NULL, CLK_SYS_HOSC); // only in order to be able get rate this clock always run (master clock)

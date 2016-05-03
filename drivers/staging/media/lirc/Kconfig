@@ -93,7 +93,7 @@ config LIRC_SUNXI_RAW
 	
 config LIRC_SEND_PWM
 	tristate "LIRC Blaster with PWM carriere generation"
-	depends on LIRC && SUNXI_PWM
+	depends on LIRC && (SUNXI_PWM || PWM_SUN4I)
 	help
 	  Driver that use sunxi native pwm driver from carrier frequency
 
