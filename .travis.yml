@@ -25,7 +25,7 @@ before_script:
 script:
 
 
- - export PATH=/usr/lib/ccache:$PATH
+  - export PATH=/usr/lib/ccache:$PATH
 
   # arm32 compilation
   - export ARCH=arm
