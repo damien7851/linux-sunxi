@@ -327,12 +327,12 @@ static struct attribute *pwm_chip_attrs[] = {
 	&dev_attr_npwm.attr,
 	NULL,
 };
-//ATTRIBUTE_GROUPS(pwm_chip);
+ATTRIBUTE_GROUPS(pwm_chip);
 
 static struct class pwm_class = {
 	.name = "pwm",
 	.owner = THIS_MODULE,
-//	.dev_groups = pwm_chip_groups, //deleted because not exit in this version of device.h
+	.dev_groups = pwm_chip_groups, //deleted because not exit in this version of device.h
 };
 
 static int pwmchip_sysfs_match(struct device *parent, void *data)
