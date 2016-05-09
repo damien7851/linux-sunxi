@@ -327,7 +327,7 @@ static struct attribute *pwm_chip_attrs[] = {
 	&dev_attr_npwm.attr,
 	NULL,
 };
-//ATTRIBUTE_GROUPS(pwm_chip);
+ATTRIBUTE_GROUPS(pwm_chip);
 
 static struct class pwm_class = {
 	.name = "pwm",
@@ -348,8 +348,8 @@ void pwmchip_sysfs_export(struct pwm_chip *chip)
 	 * If device_create() fails the pwm_chip is still usable by
 	 * the kernel its just not exported.
 	 */
-	parent = device_create(&pwm_class, chip->dev, MKDEV(0, 0), chip,
-			       "pwmchip%d", chip->base);
+	parent = device_create_with_groups(&pwm_class, chip->dev, MKDEV(0, 0), chip,
+			       pwm_chip_group,"pwmchip%d", chip->base);//add attribute to device
 	if (IS_ERR(parent)) {
 		dev_warn(chip->dev,
 			 "device_create failed for pwm_chip sysfs export\n");
