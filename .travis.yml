@@ -32,14 +32,8 @@ script:
   - export CROSS_COMPILE=arm-linux-gnueabihf-
  
   #add my modules
-  - echo "CONFIG_PWM=y" >> arch/arm/configs/cubietruck_defconfig
-  - echo "CONFIG_PWM_SYSFS=y" >> arch/arm/configs/cubietruck_defconfig
-  - echo "CONFIG_PWM_SUN4I=m" >> arch/arm/configs/cubietruck_defconfig
-  - echo "CONFIG_LIRC_SEND_PWM=m" >> arch/arm/configs/cubietruck_defconfig
-  - echo "CONFIG_CMA_SIZE_SEL_MBYTES=y" >> arch/arm/configs/cubietruck_defconfig
-  - echo "CONFIG_CMA_ALIGNMENT=8" >> arch/arm/configs/cubietruck_defconfig
-  - echo "CONFIG_CMA_AREAS=7" >> arch/arm/configs/cubietruck_defconfig
-  - make cubietruck_defconfig
+
+  - make sun7i_defconfig
   - make -j`getconf _NPROCESSORS_ONLN` uImage modules
 # - make -j`getconf _NPROCESSORS_ONLN` M=$MYHOME modules
 
