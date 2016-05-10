@@ -309,15 +309,11 @@ static struct of_device_id sun4i_pwm_dt_ids[] = { //remove const before struct
 static int sun4i_pwm_probe(struct platform_device *pdev)
 {
 	struct sun4i_pwm_chip *pwm;
-    void __iomem *timer_base = ioremap(SW_PA_TIMERC_IO_BASE, 0x400);
-
-
-	//struct resource *res; //pas de resources car pas de dtbs
-
-	u32 val;
+    u32 val;
 	int i, ret;
 	void __iomem *timer_base = ioremap(SW_PA_TIMERC_IO_BASE, 0x400); //i don't understand offset i have copied from legacy
 	const struct of_device_id *match;
+
     #ifdef CONFIG_ARCH_SUN7I
 	match = &sun4i_pwm_dt_ids[3];
 	#endif
