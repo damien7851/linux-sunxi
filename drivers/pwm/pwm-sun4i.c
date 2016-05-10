@@ -15,11 +15,11 @@
 #include <linux/of.h>
 #include <linux/of_device.h>
 #include <linux/platform_device.h>
+#include <mach/platform.h> //sunxi registre def
 #include <linux/pwm.h>
 #include <linux/slab.h>
 #include <linux/spinlock.h>
 #include <linux/time.h>
-#define PWM_CTRL_REG_BASE   (0xf1c20e00) //added + offset 0xf000000 because remap...
 #define PWM_CTRL_REG		0x0
 
 #define PWM_CH_PRD_BASE		0x4
@@ -309,8 +309,10 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
 {
 	struct sun4i_pwm_chip *pwm;
 	//struct resource *res; //pas de resources car pas de dtbs
+
 	u32 val;
 	int i, ret;
+	void __iomem *timer_base = ioremap(SW_PA_TIMERC_IO_BASE, 0x400); //i don't understand offset i have copied from legacy
 	const struct of_device_id *match;
     #ifdef CONFIG_ARCH_SUN7I
 	match = &sun4i_pwm_dt_ids[3];
@@ -322,7 +324,7 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 
-	pwm->base = PWM_CTRL_REG_BASE;//static def because no dtb
+	pwm->base = timer_base + 0x200;/* 0x01c20c00 *///PWM_CTRL_REG_BASE;//static def because no dtb
 
 
 	pwm->clk = clk_get(NULL, CLK_SYS_HOSC); // only in order to be able get rate this clock always run (master clock)
