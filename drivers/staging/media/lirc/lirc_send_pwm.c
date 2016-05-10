@@ -127,7 +127,7 @@ static void safe_udelay(unsigned long usecs)
     if (usecs>2000) {
         udelay(2000); //simple protection
     } else
-    udelay(usecs);
+        udelay(usecs);
 }
 
 static int init_timing_params(int new_duty_cycle,
@@ -146,58 +146,26 @@ static int init_timing_params(int new_duty_cycle,
     return ret;
 }
 
-static int setup_tx(unsigned int pwm)
-{
-    int result = 0;
 
-        if (pwm == 0 || pwm ==1) {
-            if (pwm_out==NULL){
-                pwm_out = pwm_request(pwm, "Ir-pwm-out");
-                }else{
-                pwm_free(pwm_out);
-                pwm_out = pwm_request(pwm, "Ir-pwm-out");
-                }
-        if (PTR_ERR(pwm_out) == -EPROBE_DEFER) {
-			dev_dbg(dev, "Device match requests probe deferral\n");
-			driver_deferred_probe_add(dev);
-		} else
-			dev_warn(dev, "Bus failed to match device: %d", ret);
-            if (IS_ERR(pwm_out)) {
-                printk(KERN_ERR LIRC_DRIVER_NAME ": pwm request fail returned %ld",PTR_ERR(pwm_out));
-                result = PTR_ERR(pwm_out);
-                if IS_ERR(pwm_out)
-                goto fail;
-            }
-            result = init_timing_params(duty_cycle,freq);
-            return result;
-        } else if (pwm == -1 ) {
-            goto fail_conf;
-        }
-
-fail_conf:
-    pwm_free(pwm_out);
-fail:
-    return result;
-}
 static long send_pulse(unsigned long length)
 {
-        if (length <= 0)
-            return 0;
-        pwm_enable(pwm_out);
-        dprintk("pwm enable");
-        safe_udelay(length);
+    if (length <= 0)
         return 0;
+    pwm_enable(pwm_out);
+    dprintk("pwm enable");
+    safe_udelay(length);
+    return 0;
 
 }
 
 
 static void send_space(long length)
 {
-        if (length <= 0)
-                return;
-        pwm_disable(pwm_out);
-        dprintk("pwm disable");
-        safe_udelay(length);
+    if (length <= 0)
+        return;
+    pwm_disable(pwm_out);
+    dprintk("pwm disable");
+    safe_udelay(length);
 }
 
 /* end of TX stuff */
@@ -228,122 +196,116 @@ static void set_use_dec(void *data)
 static ssize_t lirc_write(struct file *file, const char *buf,
                           size_t n, loff_t *ppos)
 {
-        int i, count;
-        unsigned long flags;
+    int i, count;
+    unsigned long flags;
 
-        long delta = 0;
-        int *wbuf;
+    long delta = 0;
+    int *wbuf;
 
-        count = n / sizeof(int);
-        if (n % sizeof(int) || count % 2 == 0)
-                return -EINVAL;
-        wbuf = memdup_user(buf, n);
-        if (IS_ERR(wbuf))
-                return PTR_ERR(wbuf);
-        spin_lock_irqsave(&lock, flags);
-        dprintk("lirc_write called");
-        for (i = 0; i < count; i++) {
-                if (i%2)
-                        send_space(wbuf[i] - delta);
-                else
-                        delta = send_pulse(wbuf[i]);
-        }
-        pwm_disable(pwm_out);
-        spin_unlock_irqrestore(&lock, flags);
+    count = n / sizeof(int);
+    if (n % sizeof(int) || count % 2 == 0)
+        return -EINVAL;
+    wbuf = memdup_user(buf, n);
+    if (IS_ERR(wbuf))
+        return PTR_ERR(wbuf);
+    spin_lock_irqsave(&lock, flags);
+    dprintk("lirc_write called");
+    for (i = 0; i < count; i++) {
+        if (i%2)
+            send_space(wbuf[i] - delta);
+        else
+            delta = send_pulse(wbuf[i]);
+    }
+    pwm_disable(pwm_out);
+    spin_unlock_irqrestore(&lock, flags);
     if (count>11) {
         dprintk("lirc_write sent %d pulses: no10: %d, no11: %d\n",count,wbuf[10],wbuf[11]);
     }
-        kfree(wbuf);
-        return n;
+    kfree(wbuf);
+    return n;
 }
 
 /* interpret lirc commands */
 static long lirc_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
 {
-        int result;
-        __u32 value;
+    int result;
+    __u32 value;
 
-        switch (cmd) {
-        case LIRC_GET_SEND_MODE:
-            return -ENOIOCTLCMD;
-            break;
+    switch (cmd) {
+    case LIRC_GET_SEND_MODE:
+        return -ENOIOCTLCMD;
+        break;
 
-        case LIRC_SET_SEND_MODE:
-            result = get_user(value, (__u32 *) arg);
-            if (result)
-                return result;
-            /* only LIRC_MODE_PULSE supported */
-            if (value != LIRC_MODE_PULSE)
-                return -ENOSYS;
-            dprintk("Sending stuff on lirc");
-            break;
-
-        case LIRC_GET_LENGTH:
+    case LIRC_SET_SEND_MODE:
+        result = get_user(value, (__u32 *) arg);
+        if (result)
+            return result;
+        /* only LIRC_MODE_PULSE supported */
+        if (value != LIRC_MODE_PULSE)
             return -ENOSYS;
-            break;
+        dprintk("Sending stuff on lirc");
+        break;
 
-        case LIRC_SET_SEND_DUTY_CYCLE:
-            result = get_user(value, (__u32 *) arg);
-            if (result)
-                return result;
-            if (value <= 0 || value > 100)
-                return -EINVAL;
-            dprintk("SET_SEND_DUTY_CYCLE to %d \n", value);
-            return init_timing_params(value, freq);
-            break;
+    case LIRC_GET_LENGTH:
+        return -ENOSYS;
+        break;
 
-        case LIRC_SET_SEND_CARRIER:
-            result = get_user(value, (__u32 *) arg);
-            if (result)
-                return result;
-            if (value > 500000 || value < 20000) /* this value is widely understood in*/
-                                                 /*the material ability but is a real IR modulation range*/
-                return -EINVAL;
-            dprintk("SET_SEND_CARRIER to %d \n",value);
-            return init_timing_params(duty_cycle, value);
-            break;
+    case LIRC_SET_SEND_DUTY_CYCLE:
+        result = get_user(value, (__u32 *) arg);
+        if (result)
+            return result;
+        if (value <= 0 || value > 100)
+            return -EINVAL;
+        dprintk("SET_SEND_DUTY_CYCLE to %d \n", value);
+        return init_timing_params(value, freq);
+        break;
 
-        default:
-            return lirc_dev_fop_ioctl(filep, cmd, arg);
-        }
-        return 0;
+    case LIRC_SET_SEND_CARRIER:
+        result = get_user(value, (__u32 *) arg);
+        if (result)
+            return result;
+        if (value > 500000 || value < 20000) /* this value is widely understood in*/
+            /*the material ability but is a real IR modulation range*/
+            return -EINVAL;
+        dprintk("SET_SEND_CARRIER to %d \n",value);
+        return init_timing_params(duty_cycle, value);
+        break;
+
+    default:
+        return lirc_dev_fop_ioctl(filep, cmd, arg);
+    }
+    return 0;
 }
 
 static const struct file_operations lirc_fops = {
-        .owner                = THIS_MODULE,
-        .write                = lirc_write,
-        .unlocked_ioctl        = lirc_ioctl,
-        .read                = lirc_dev_fop_read, // this and the rest is default
-        .poll                = lirc_dev_fop_poll,
-        .open                = lirc_dev_fop_open,
-        .release        = lirc_dev_fop_close,
-        .llseek                = no_llseek,
+    .owner                = THIS_MODULE,
+    .write                = lirc_write,
+    .unlocked_ioctl        = lirc_ioctl,
+    .read                = lirc_dev_fop_read, // this and the rest is default
+    .poll                = lirc_dev_fop_poll,
+    .open                = lirc_dev_fop_open,
+    .release        = lirc_dev_fop_close,
+    .llseek                = no_llseek,
 };
 
 static struct lirc_driver driver = {
-        .name                = LIRC_DRIVER_NAME,
-        .minor                = -1,           // assing automatically
-        .code_length        = 1,
-        .sample_rate        = 0,
-        .data                = NULL,
-        .add_to_buf        = NULL,
-        .rbuf                = &rbuf,
-        .set_use_inc        = set_use_inc,
-        .set_use_dec        = set_use_dec,
-        .fops                = &lirc_fops,
-        .dev                = NULL,
-        .owner                = THIS_MODULE,
+    .name                = LIRC_DRIVER_NAME,
+    .minor                = -1,           // assing automatically
+    .code_length        = 1,
+    .sample_rate        = 0,
+    .data                = NULL,
+    .add_to_buf        = NULL,
+    .rbuf                = &rbuf,
+    .set_use_inc        = set_use_inc,
+    .set_use_dec        = set_use_dec,
+    .fops                = &lirc_fops,
+    .dev                = NULL,
+    .owner                = THIS_MODULE,
 };
 
 /* end of lirc device/driver stuff */
 
-/* now comes THIS driver, above is lirc */
-static struct platform_driver lirc_send_pwm_driver = {
-        .driver = {
-                .name   = LIRC_DRIVER_NAME,
-                .owner  = THIS_MODULE,
-        },
-};
+
 
 
 
@@ -366,7 +328,7 @@ static ssize_t lirc_pwm_store(struct class *class, struct class_attribute *attr,
     ssize_t status;
     mutex_lock(&sysfs_lock);
     sscanf(buf,"%d",&new_pwm);
-    status = setup_tx(new_pwm) ? -EINVAL : size;
+    status = -ENOSYS;
     mutex_unlock(&sysfs_lock);
     return status;
 }
@@ -390,9 +352,8 @@ static ssize_t lirc_active_state_store(struct class *class, struct class_attribu
     mutex_lock(&sysfs_lock);
     sscanf(buf,"%d",&try_value);
     if ((try_value==0) || (try_value==1)) {
-    //    pwm_polarity(pwm_out,try_value);
-    }
-    else
+        //    pwm_polarity(pwm_out,try_value);
+    } else
         status = -EINVAL;
     mutex_unlock(&sysfs_lock);
     return status;
@@ -407,116 +368,69 @@ static struct class_attribute lirc_send_pwm_attrs[] = {
     __ATTR(active_state, 0644, lirc_active_state_show, lirc_active_state_store),
     __ATTR_NULL,
 };
-static struct class lirc_send_pwm_class = { //TODOI renomage
-    .name = "lirc_send_pwm",
-    .owner = THIS_MODULE,
-    .class_attrs = lirc_send_pwm_attrs,
-};
+static struct class lirc_send_pwm_class = { //TODO renomage
+        .name = "lirc_send_pwm",
+        .owner = THIS_MODULE,
+        .class_attrs = lirc_send_pwm_attrs,
+    };
 
-/* end of sysfs stuff */
+
+/* now comes THIS driver, above is lirc */
 
 /* initialize / free THIS driver and device and a lircconvert_string_to_microseconds buffer*/
-
-static int __init lirc_send_pwm_init(void)
+static int lirc_send_pwm_remove(struct platform_device *pdev)
 {
-        int result;
-
-
-        /* Init read buffer. */
-        result = lirc_buffer_init(&rbuf, sizeof(int), RBUF_LEN);
-        if (result < 0)
-                return -ENOMEM;
-
-        result = platform_driver_register(&lirc_send_pwm_driver);
-        if (result) {
-                printk(KERN_ERR LIRC_DRIVER_NAME
-                       ": lirc register returned %d\n", result);
-                goto exit_buffer_free;
-        }
-
-        lirc_send_pwm_dev = platform_device_alloc(LIRC_DRIVER_NAME, 0);
-        if (!lirc_send_pwm_dev) {
-                result = -ENOMEM;
-                goto exit_driver_unregister;
-        }
-
-        result = platform_device_add(lirc_send_pwm_dev);
-        if (result)
-                goto exit_device_put;
-        //configuration pwm
-
-        result = setup_tx(pwm_num);
-        if (result){
-            printk(KERN_ERR LIRC_DRIVER_NAME ": setup failed returned %d\n",result);
-            goto pwm_free_exit;
-
-        }
-
-
-        return 0;
-
-pwm_free_exit:
-        setup_tx(-1);
-
-
-        platform_device_unregister(lirc_send_pwm_dev); /*TODO : verify this line */
-
-exit_device_put:
-        platform_device_put(lirc_send_pwm_dev);
-
-exit_driver_unregister:
-        platform_driver_unregister(&lirc_send_pwm_driver);
-
-exit_buffer_free:
-        lirc_buffer_free(&rbuf);
-
-        return result;
+    lirc_buffer_free(&rbuf);
+    class_unregister(&lirc_send_pwm_class);
+    lirc_unregister_driver(driver.minor);
+    pwm_disable(pwm_out);
+    pwm_free(pwm_out);
+    printk(KERN_INFO LIRC_DRIVER_NAME ": cleaned up module\n");
+    return 0;
 }
-
-static void lirc_send_pwm_exit(void)
-{
-
-        pwm_disable(pwm_out);
-        pwm_free(pwm_out);
-        platform_device_unregister(lirc_send_pwm_dev);
-        platform_driver_unregister(&lirc_send_pwm_driver);
-        lirc_buffer_free(&rbuf);
-}
-
-/* end of stuff for THIS driver/device registration */
-/* ignorance of unset pins in setup routines tolerate call if nothing is set up */
-
-/* master init */
-
-static int __init lirc_send_pwm_init_module(void)
+static int lirc_send_pwm_probe(struct platform_device *pdev)
 {
     int result;
+    lirc_send_pwm_dev = pdev; //TODO voir ce binz
+    if (pwm_num == 0 || pwm_num ==1)
+    {
+        pwm_out = pwm_request(pwm_num, "Ir-pwm-out"); //this function is deprecated use pwm_get() instead but depandencie of pwm_get is not present
+/* test if request is correct */
+        if (IS_ERR(pwm_out))
+            return PTR_ERR(pwm_out);
 
-        result = lirc_send_pwm_init();
-        if (result)
-                return result;
-    // 'driver' is the lirc driver
-        driver.features = LIRC_CAN_SET_SEND_DUTY_CYCLE |
-    LIRC_CAN_SET_SEND_CARRIER |
-    LIRC_CAN_SEND_PULSE ; // TODO enlever ce qu'il y a en trop
+        result = init_timing_params(duty_cycle,freq);
 
-        driver.dev = &lirc_send_pwm_dev->dev;  // link THIS platform device to lirc driver TODO renomer
-        driver.minor = lirc_register_driver(&driver);
-
-        if (driver.minor < 0) {
-                printk(KERN_ERR LIRC_DRIVER_NAME
-                       ": device registration failed with %d\n", result);
-                result = -EIO;
-                goto exit_lirc;
+        if (result) {
+            printk(KERN_ERR LIRC_DRIVER_NAME "pwm param fail returned %d",result);
+            goto exit_lirc;
         }
+    } else {
+        result = -EINVAL;
+        goto exit_lirc;
+    }
+    // 'driver' is the lirc driver
+    driver.features = LIRC_CAN_SET_SEND_DUTY_CYCLE |
+                      LIRC_CAN_SET_SEND_CARRIER |
+                      LIRC_CAN_SEND_PULSE ;
 
-        printk(KERN_INFO LIRC_DRIVER_NAME ": driver registered!\n");
+    driver.dev = &lirc_send_pwm_dev->dev;  // link THIS platform device to lirc driver TODO renomer
+    driver.minor = lirc_register_driver(&driver);
+
+    if (driver.minor < 0) {
+        printk(KERN_ERR LIRC_DRIVER_NAME
+               ": device registration failed with %d\n", result);
+        result = -EIO;
+        goto exit_lirc;
+    }
+
+    printk(KERN_INFO LIRC_DRIVER_NAME ": driver registered in lirc!\n");
 
 
     /* some hacking to get pins initialized on first used */
     /* setup_tx/rx will not do anything if pins would not change */
 
-     if (device_open) {  // this is unlikely, but well...
+    if (device_open) {  // this is unlikely, but well...
         result = set_use_inc((void*) 0);
         if (result<0) {
             goto exit_lirc;
@@ -529,28 +443,70 @@ static int __init lirc_send_pwm_init_module(void)
     }
 
 
-        return 0;
+    /* Init read buffer. */
+    result = lirc_buffer_init(&rbuf, sizeof(int), RBUF_LEN);
+    if (result < 0)
+        goto exit_class;
 
-exit_lirc:
-    /* failed attempt to setup_tx/rx sets pin to 0. */
-    /* next call with arg 0 will then not do anything -> only one exit routine */
-        lirc_send_pwm_exit();
 
         return result;
-}
 
-static void __exit lirc_send_pwm_exit_module(void)
-{
-
-        lirc_send_pwm_exit();
+exit_class:
     class_unregister(&lirc_send_pwm_class);
-
-        lirc_unregister_driver(driver.minor);
-        printk(KERN_INFO LIRC_DRIVER_NAME ": cleaned up module\n");
+    pwm_free(pwm_out);
+exit_lirc:
+    return result;
 }
 
-module_init(lirc_send_pwm_init_module);
-module_exit(lirc_send_pwm_exit_module);
+static struct platform_driver lirc_send_pwm_driver = {
+    .driver = {
+        .name   = LIRC_DRIVER_NAME,
+        .owner  = THIS_MODULE,
+
+    },
+    .probe = lirc_send_pwm_probe,
+    .remove = lirc_send_pwm_remove,
+};
+static int __init lirc_send_pwm_init(void)
+{
+    int result;
+
+    result = platform_driver_register(&lirc_send_pwm_driver);
+    if (result) {
+        printk(KERN_ERR LIRC_DRIVER_NAME
+               ": lirc register returned %d\n", result);
+        return result;
+    }
+
+    lirc_send_pwm_dev = platform_device_alloc(LIRC_DRIVER_NAME, 0);
+    if (!lirc_send_pwm_dev) {
+        result = -ENOMEM;
+        goto exit_driver_unregister;
+    }
+
+    result = platform_device_add(lirc_send_pwm_dev);
+    if (result)
+        goto exit_device_put;
+
+    return 0;
+
+exit_device_put:
+    platform_device_put(lirc_send_pwm_dev);
+
+exit_driver_unregister:
+    platform_driver_unregister(&lirc_send_pwm_driver);
+
+    return result;
+}
+
+static void __exit lirc_send_pwm_exit(void)
+{
+    platform_device_unregister(lirc_send_pwm_dev);
+    platform_driver_unregister(&lirc_send_pwm_driver);
+}
+
+module_init(lirc_send_pwm_init);
+module_exit(lirc_send_pwm_exit);
 
 MODULE_DESCRIPTION("Infra-red  blaster driver for PWM-Lib.");
 MODULE_DESCRIPTION("Parameters can be set/changed in /sys/class/lirc_send_pwm");
