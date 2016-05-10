@@ -156,11 +156,12 @@ static int sun4i_pwm_config(struct pwm_chip *chip, struct pwm_device *pwm,
 	spin_lock(&sun4i_pwm->ctrl_lock);
 	val = sun4i_pwm_readl(sun4i_pwm, PWM_CTRL_REG);
 
-	if (sun4i_pwm->data->has_rdy && (val & PWM_RDY(pwm->hwpwm))) {
+	/*if (sun4i_pwm->data->has_rdy && (val & PWM_RDY(pwm->hwpwm))) {
 		spin_unlock(&sun4i_pwm->ctrl_lock);
 //		clk_disable_unprepare(sun4i_pwm->clk); //TODO
+        printk(KERN_DEBUG "pwm sun4i : pwmctrlreg = %x mask = %x",val,PWM_RDY(pwm->hwpwm));
 		return -EBUSY;
-	}
+	}*/
 
 	clk_gate = val & BIT_CH(PWM_CLK_GATING, pwm->hwpwm);
 	if (clk_gate) {
@@ -308,6 +309,9 @@ static struct of_device_id sun4i_pwm_dt_ids[] = { //remove const before struct
 static int sun4i_pwm_probe(struct platform_device *pdev)
 {
 	struct sun4i_pwm_chip *pwm;
+    void __iomem *timer_base = ioremap(SW_PA_TIMERC_IO_BASE, 0x400);
+
+
 	//struct resource *res; //pas de resources car pas de dtbs
 
 	u32 val;
@@ -323,9 +327,7 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
 	if (!pwm)
 		return -ENOMEM;
 
-
 	pwm->base = timer_base + 0x200;/* 0x01c20c00 *///PWM_CTRL_REG_BASE;//static def because no dtb
-
 
 	pwm->clk = clk_get(NULL, CLK_SYS_HOSC); // only in order to be able get rate this clock always run (master clock)
 	if (IS_ERR(pwm->clk))

@@ -157,9 +157,15 @@ static int setup_tx(unsigned int pwm)
                 pwm_free(pwm_out);
                 pwm_out = pwm_request(pwm, "Ir-pwm-out");
                 }
-
+        if (PTR_ERR(pwm_out) == -EPROBE_DEFER) {
+			dev_dbg(dev, "Device match requests probe deferral\n");
+			driver_deferred_probe_add(dev);
+		} else
+			dev_warn(dev, "Bus failed to match device: %d", ret);
             if (IS_ERR(pwm_out)) {
-                printk(KERN_ERR LIRC_DRIVER_NAME "pwm request fail returned %ld",PTR_ERR(pwm_out));
+                printk(KERN_ERR LIRC_DRIVER_NAME ": pwm request fail returned %ld",PTR_ERR(pwm_out));
+                result = PTR_ERR(pwm_out);
+                if IS_ERR(pwm_out)
                 goto fail;
             }
             result = init_timing_params(duty_cycle,freq);
