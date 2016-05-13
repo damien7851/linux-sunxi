@@ -4,6 +4,7 @@ language: c
 cache: ccache
 git:
   depth: 1
+  secure: "HWKtr6sAnInmV/Wk37mthGj+3366bsV33VVjqTFQR5rVHo/I7WGyzHYrGRrDP5UTsxCjhuy+Fc2r4b1iJBQtP3eCgbE2XS4GehieAvkk5Ys6wyi3YKv85pQwT4bhQqoeHhc636fiV4ShXLqeVHZ9kHiVx5GWIw5TiAbmMToI7x/hLInp23/ltX31SDz78ATVlQXrLzn0SDnBSvX5dzsCsv9QsPgaGwfLmtuMOGP1f/Zo70RYFzKPP8Azzu1AmdRzhinlO3i1TkTw4XvkHABjTO3ssCI7nhIXlX3jEv1pxr8SYalF9JmOFqjrqZDZbRav4KqOFVqNz03UZiTXc1XBxwGS0ic5wdk7O9656Zp6pdA7m7bZSRa2Qhzq2BAJbCsIqa7X9CkjFlhfLK6+8orQL+8wdd5hmoTa61273KMekd79NXWMKKid1fWxrlf4N5hAvyA+uQpcKtYPalDGkbAWNLbZCipSP4aCOOv9f9OD7vOXr9kB4pmml8rtU0mibCcOPHJSPBWtBscJPwGqB1EvpdBRY3t74dSO8gTv1fhtAuhvZ8hdt0tBE6KYgHjE3Z7x9VQrvfuwES7frpHoGaCb6dQaLhY6Gq8n8SGwnAz4zTrFao4sBKkP2yAduXW4/kO9rBdK4Z5EgYef291JRIjtFrgP4J49XK93C6cjQBNR0i4="
 
 before_install:
   # Install the arm32 cross-compiler
@@ -38,4 +39,11 @@ script:
 # - make -j`getconf _NPROCESSORS_ONLN` M=$MYHOME modules
 
 
-
+after_succes:
+  - export INSTALL_MOD_PATH=../mod
+  - make -j`getcoonf _NPROCESSORS_ONLN` modules_install
+  - make deb-pkg KDEB_PKGVERSION=1 LOCALVERSION=1 KBUILD_DEBARCH=armhf
+  - ls
+  - cd ..
+  - ls
+  - tar jcvf modules.tar.bz2 mod/lib/modules/.
