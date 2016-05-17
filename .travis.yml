@@ -43,16 +43,4 @@ script:
 
 
 after_success:
-  - export INSTALL_MOD_PATH=../mod
-  - make -j`getcoonf _NPROCESSORS_ONLN` modules_install
-  - make deb-pkg KDEB_PKGVERSION=1 LOCALVERSION=1 KBUILD_DEBARCH=armhf
-  - ls
-  - cd ..
-  - ls
-  - tar jcvf modules.tar.bz2 mod/lib/modules/.
-  - git branch bin
-  - git checkout bin
-  - ls
-  - git add modules.tar.bz2
-  - git commit -a -m "add modules pkg"
-  - git push
+  - . ./CI/after_succes.sh
