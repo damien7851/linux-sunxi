@@ -9,8 +9,8 @@ echo $PWD
 
 KERNEL_DIR=$PWD
 
-git config --global user.name $GIT_NAME
-git config --global user.email $GIT_EMAIL
+git config --global user.name damien7851
+git config --global user.email damien.pageot78@gmail.com
 
 git checkout bin
 cp ../linux-image* .
