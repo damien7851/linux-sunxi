@@ -9,8 +9,8 @@ ls ..
 
 KERNEL_DIR=$PWD
 git config --global push.default simple
-git config --global user.name damien7851
-git config --global user.email damien.pageot78@gmail.com
+git config --global user.name "damien7851"
+git config --global user.email "damien.pageot78@gmail.com"
 
 git checkout bin
 cp ../linux-image* .
