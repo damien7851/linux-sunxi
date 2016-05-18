@@ -10,7 +10,10 @@ KERNEL_DIR=$PWD
 git config --global user.name "damien7851"
 git config --global user.email $MYMAIL
 
-git checkout bin
+git checkout bin || git checkout --orphan bin
+cd ..
+rm -rf linux-sunxi/**/*
+cd linux-sunxi
 cp ../linux-image* .
 cp ../uImage .
 git add .
