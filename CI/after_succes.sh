@@ -1,14 +1,14 @@
 #!/bin/bash
 
-export INSTALL_MOD_PATH=../mod
-make -j`getcoonf _NPROCESSORS_ONLN` modules_install
-make deb-pkg KDEB_PKGVERSION=1 LOCALVERSION=1 KBUILD_DEBARCH=armhf
+make deb-pkg KDEB_PKGVERSION=1 LOCALVERSION=1 KBUILD_DEBARCH=armhf > logdebpkg.log
+cat logdebpkg.log | grep -E 'dpkg-deb | warning | error'
 cp arch/arm/boot/uImage ../uImage
+echo "directorie listing : "$PWD
 ls ..
-echo $PWD
+
 
 KERNEL_DIR=$PWD
-
+git config --global push.default simple
 git config --global user.name damien7851
 git config --global user.email damien.pageot78@gmail.com
 
