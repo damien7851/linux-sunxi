@@ -1,26 +1,26 @@
 # One may have a look at http://docs.travis-ci.com/user/installing-dependencies/
+sudo: false
+addons:
+  apt:
+    packages:
+    - gcc-arm-linux-gnueabihf
+    - u-boot-tools
+    - lzop
 
 language: c
+env:
+  global:
+  - secure: "HWKtr6sAnInmV/Wk37mthGj+3366bsV33VVjqTFQR5rVHo/I7WGyzHYrGRrDP5UTsxCjhuy+Fc2r4b1iJBQtP3eCgbE2XS4GehieAvkk5Ys6wyi3YKv85pQwT4bhQqoeHhc636fiV4ShXLqeVHZ9kHiVx5GWIw5TiAbmMToI7x/hLInp23/ltX31SDz78ATVlQXrLzn0SDnBSvX5dzsCsv9QsPgaGwfLmtuMOGP1f/Zo70RYFzKPP8Azzu1AmdRzhinlO3i1TkTw4XvkHABjTO3ssCI7nhIXlX3jEv1pxr8SYalF9JmOFqjrqZDZbRav4KqOFVqNz03UZiTXc1XBxwGS0ic5wdk7O9656Zp6pdA7m7bZSRa2Qhzq2BAJbCsIqa7X9CkjFlhfLK6+8orQL+8wdd5hmoTa61273KMekd79NXWMKKid1fWxrlf4N5hAvyA+uQpcKtYPalDGkbAWNLbZCipSP4aCOOv9f9OD7vOXr9kB4pmml8rtU0mibCcOPHJSPBWtBscJPwGqB1EvpdBRY3t74dSO8gTv1fhtAuhvZ8hdt0tBE6KYgHjE3Z7x9VQrvfuwES7frpHoGaCb6dQaLhY6Gq8n8SGwnAz4zTrFao4sBKkP2yAduXW4/kO9rBdK4Z5EgYef291JRIjtFrgP4J49XK93C6cjQBNR0i4="
+  - secure: "U4lT0SsJUt+AA0l6pEAg/3TAurPdmK0sdoH6oNKwXq3+6eMRUxM62hI1SFiIVIijMYUP8u5/Sk0OIvR+ACKf8JjdNhIVchlU5MJx1FRqduzK+eR8KSE+d9gEyB+TBS0ZMRZVr0DjfU1V62q4V0n5TSgUGiA17Id9OOyLD0ojC3ZjWazZGATcTU1vr22F/S+mD+JhhggjB0unptXOqA3Qx5NOUj0qW54/dal4ypcM6ZuMLHnENMdvUAcV1BrvWNYmhtI/8tgEkVKxqTw4K8WGAQWX0O45nOcPJaAey8H1VtSy/NylHo0/Z1jjVm7O3bAGilBgyczM3qs/tkNr14qQoDMv5ycx7uDzwka3diWZ/jMEFCITS/ZDHKRYGhvyUiHaa7gXKqwHtugAEiP1pLxEGxfhojOgFKfxSrfnOEjbvmBpHMew9XWKLdjkDD/26WNWL5foZGOTEWVrEyV3ATQfhal+S6ZSd7rBHa1ssR2Ru87PgWeRFRSErjixCCHm372+gHPImxytlyHkQAYiaTzj4DUZNmmjB0qCL0oCuZBQ7lstRK0O4Hl2fTMIgBFmdxOFlz6J+Q0/c623A7xLyvAShSVYRc1mATWSGeqNCZOBzUcF00Wy1HQ8atI7n6C8qJnZ1cdWHEkufESYcwIEoCh3l/FArmcuFBHkUk1ntqKUBTw="
 cache: ccache
 git:
   depth: 1
 
-before_install:
-  # Install the arm32 cross-compiler
-  - sudo apt-get update -qq
-  - sudo apt-get install -y gcc-arm-linux-gnueabihf
-  - arm-linux-gnueabihf-gcc --version
-  # Install bc (required by the kernel)
-  - sudo apt-get install bc
-  # Install 32-bit compatibility libraries for the Linaro arm64 cross-compiler
-  # (which is a 32-bit x86 binary)
-  - if [ `uname -m` = x86_64 ]; then sudo apt-get install libc6-i386 lib32stdc++6 lib32z1; fi
-  - sudo apt-get install u-boot-tools lzop
+
+
 before_script:
   # Store the home repository
- 
-  - export MYHOME=$PWD
-
+  - arm-linux-gnueabihf-gcc --version
 
 script:
 
@@ -31,17 +31,11 @@ script:
   - export ARCH=arm
   - export CROSS_COMPILE=arm-linux-gnueabihf-
  
-  #add my modules
-  - echo "CONFIG_PWM=y" >> arch/arm/configs/cubietruck_defconfig
-  - echo "CONFIG_PWM_SYSFS=y" >> arch/arm/configs/cubietruck_defconfig
-  - echo "CONFIG_PWM_SUN4I=m" >> arch/arm/configs/cubietruck_defconfig
-  - echo "CONFIG_LIRC_SEND_PWM=m" >> arch/arm/configs/cubietruck_defconfig
-  - echo "CONFIG_CMA_SIZE_SEL_MBYTES=y" >> arch/arm/configs/cubietruck_defconfig
-  - echo "CONFIG_CMA_ALIGNMENT=8" >> arch/arm/configs/cubietruck_defconfig
-  - echo "CONFIG_CMA_AREAS=7" >> arch/arm/configs/cubietruck_defconfig
+ 
   - make cubietruck_defconfig
-  - make -j`getconf _NPROCESSORS_ONLN` uImage modules
-# - make -j`getconf _NPROCESSORS_ONLN` M=$MYHOME modules
+  - make -j`getconf _NPROCESSORS_ONLN` uImage modules | grep -E 'function | Image | Created |warning | error'
 
+after_success:
+  - . ./ci/after_succes.sh
 
 
