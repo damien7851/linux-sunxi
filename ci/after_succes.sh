@@ -10,24 +10,17 @@ echo "directorie listing : "$PWD
 ls
 
 
-
+cd  ..
+git clone --depth=1 -b bin https://github.com/damien7851/linux-sunxi.git bin
+rm -rf bin/*
+cd bin
 git config --global push.default simple
 git config --global user.name "damien7851"
 git config --global user.email $MYMAIL
 
-KERNEL_DIR=$PWD
-
-
-
-git checkout bin || git checkout --orphan bin
-cd ..
-echo $PWD
-rm -rf linux-sunxi/**/*
-cd linux-sunxi
-ls
 cp ../linux-image* .
 cp ../uImage .
 
 git add .
 git commit -a -m "add modules pkg"
-git push --set-upstream origin bin --quiet https://$GH_TOKEN@github.com/$TRAVIS_REPO_SLUG bin
+git push --quiet https://$GH_TOKEN@github.com/$TRAVIS_REPO_SLUG bin
