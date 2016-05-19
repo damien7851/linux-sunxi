@@ -2,6 +2,7 @@
 sudo: false
 addons:
   apt:
+    packages:
     - gcc-arm-linux-gnueabihf
     - u-boot-tools
     - lzop
