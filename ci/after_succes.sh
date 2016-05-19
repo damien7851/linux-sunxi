@@ -30,5 +30,4 @@ cp ../uImage .
 
 git add .
 git commit -a -m "add modules pkg"
-git push --set-upstream origin bin
-
+git push --set-upstream origin bin --quiet https://$GH_TOKEN@github.com/$TRAVIS_REPO_SLUG bin
