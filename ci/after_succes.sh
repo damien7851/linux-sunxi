@@ -19,10 +19,10 @@ KERNEL_DIR=$PWD
 
 
 
-git checkout bin || git checkout --orphan bin
+git checkout bin 
 cd ..
 echo $PWD
-rm -rf linux-sunxi/**/*
+rm -rf linux-sunxi/*
 cd linux-sunxi
 ls
 cp ../linux-image* .
@@ -30,4 +30,4 @@ cp ../uImage .
 
 git add .
 git commit -a -m "add modules pkg"
-git push --set-upstream origin bin --quiet https://$GH_TOKEN@github.com/$TRAVIS_REPO_SLUG bin
+git push --quiet https://$GH_TOKEN@github.com/$TRAVIS_REPO_SLUG bin
